@@ -1,0 +1,13 @@
+---
+- hosts: all
+  become: true
+  vars_files:
+    - vars/common.yml
+  roles:
+    - common
+    - awscli
+    - rsyslog
+    - fail2ban
+    - newrelic
+    - postfix
+    - brianshumate.consul

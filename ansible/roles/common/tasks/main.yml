@@ -1,0 +1,53 @@
+---
+- name: setup locales
+  locale_gen: name=en_US.UTF-8 state=present
+
+- name: allow sudoers to sudo without password
+  lineinfile: "dest=/etc/sudoers state=present regexp='^%sudo' line='%sudo ALL=(ALL:ALL) NOPASSWD:ALL' validate='visudo -cf %s'"
+
+- name: Disallow password authentication
+  action: lineinfile dest=/etc/ssh/sshd_config regexp="^PasswordAuthentication" line="PasswordAuthentication no" state=present
+  notify: restart ssh
+
+- name: if apt cache is cold, update it
+  apt: update_cache=yes cache_valid_time=3600
+
+- name: install basic packages
+  apt: pkg={{ item }} state=present
+  with_items: '{{common_packages}}'
+
+- name: install apt-transport-https
+  apt: pkg=apt-transport-https state=present force=yes
+
+- name: Set timezone to UTC
+  copy: content='UTC'
+        dest=/etc/timezone
+        owner=root
+        group=root
+        mode=0644
+        backup=yes
+  notify:
+    - update timezone
+
+- name: change root password
+  action: user name=root password=$root_password
+
+- name: Disallow password authentication
+  action: lineinfile dest=/etc/ssh/sshd_config regexp="^PasswordAuthentication" line="PasswordAuthentication no" state=present
+  notify: restart ssh
+
+- name: ensure github.com is a known host
+  lineinfile:
+    dest: /root/.ssh/known_hosts
+    create: yes
+    state: present
+    line: "{{ lookup('pipe', 'ssh-keyscan -t rsa github.com') }}"
+    regexp: "^github\\.com"
+
+- name: create backups group
+  group:
+    name: backups
+    state: present
+
+- name: create backups folder
+  file: path=/backups state=directory owner=root group=backups mode=0770

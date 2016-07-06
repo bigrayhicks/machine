@@ -1,0 +1,13 @@
+---
+- name: install fail2ban
+  apt: pkg=fail2ban state=present
+
+- name: add fail2ban jail.local file
+  template: src=etc/fail2ban/jail.local dest=/etc/fail2ban/jail.local
+  notify:
+    - restart fail2ban
+
+- name: log to syslog
+  lineinfile: dest=/etc/fail2ban/fail2ban.conf regexp=^logtarget line=logtarget=SYSLOG
+  notify:
+    - restart fail2ban

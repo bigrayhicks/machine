@@ -1,0 +1,23 @@
+---
+- name: Install python dependencies
+  apt: name=python-pip state=present
+
+- name: Install awscli
+  pip: name=awscli state=present
+
+- name: create .aws directory
+  file: path=/root/.aws state=directory
+
+#- name: set credentials
+#  template:
+#    src: root/.aws/credentials
+#    dest: /root/.aws/credentials
+
+#- name: send backups to s3
+#  cron:
+#    name: "s3 backups"
+#    minute: 10
+#    hour: 2
+#    user: "root"
+#    job: "/usr/local/bin/aws s3 --quiet sync /backups/ s3://stojg/backups/`hostname`"
+#    cron_file: s3_backups

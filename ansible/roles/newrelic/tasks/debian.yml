@@ -1,0 +1,22 @@
+---
+- name: Debian | Set newrelic_loaded_os_family
+  set_fact:
+    newrelic_loaded_os_family: "{{ ansible_os_family }}"
+
+- name: Debian | Add New Relic repo key
+  apt_key:
+    url: https://download.newrelic.com/548C16BF.gpg
+    id: 548C16BF
+    state: present
+
+- name: Debian | Add New Relic repository
+  apt_repository: repo='deb http://apt.newrelic.com/debian/ newrelic non-free' state=present update_cache=yes
+
+- name: Debian | Install New Relic Sysmond
+  apt:
+    pkg: newrelic-sysmond
+    update_cache: yes
+    cache_valid_time: 86400
+    state: latest
+  notify:
+    - Restart New Relic

@@ -1,0 +1,19 @@
+- name: install rsyslog gnutls
+  apt: pkg={{ item }} state=present force=yes
+  with_items:
+    - rsyslog
+    - rsyslog-gnutls
+    - gnutls-bin
+  notify: restart rsyslog
+
+- name: copy forwarding base conf
+  template: src=etc/rsyslog.conf dest=/etc/rsyslog.conf
+  notify: restart rsyslog
+
+- name: copy forwarding defaults conf
+  template: src=etc/rsyslog.d/default.conf dest=/etc/rsyslog.d/10-default.conf
+  notify: restart rsyslog
+
+- name: log newrelic to papertrails
+  template: src=etc/rsyslog.d/newrelic.conf dest=/etc/rsyslog.d/newrelic.conf
+  notify: restart rsyslog
