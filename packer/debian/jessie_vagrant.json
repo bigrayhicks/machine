@@ -1,7 +1,13 @@
 {
 	"variables": {
 		"debian_version": "8.5.0",
-		"md5_checksum": "3e1b9029a0cf188730646c379d15073f"
+		"md5_checksum": "3e1b9029a0cf188730646c379d15073f",
+		"atlas_username": "{{env `ATLAS_USERNAME`}}",
+		"atlas_token": "{{env `ATLAS_TOKEN`}}"
+	},
+	"push": {
+		"name": "stojg/debian",
+		"vcs": true
 	},
 	"builders": [
 		{
@@ -45,16 +51,6 @@
 			]
 		}
 	],
-	"post-processors": [
-		{
-			"type": "vagrant",
-			"compression_level": "9",
-			"output": "debian-{{user `debian_version`}}-amd64_{{.Provider}}.box",
-			"only": [
-				"virtualbox-iso"
-			]
-		}
-	],
 	"provisioners": [
 		{
 			"type": "shell",
@@ -69,9 +65,26 @@
 				"scripts/vbaddguest.sh",
 				"scripts/cleanup.sh"
 			],
-			"only": [
-				"virtualbox-iso"
-			]
+			"only": ["virtualbox-iso"]
 		}
+	],
+	"post-processors": [
+		[
+			{
+				"type": "vagrant",
+				"keep_input_artifact": false
+			},
+			{
+				"type": "atlas",
+				"only": ["virtualbox-iso"],
+				"token": "{{user `atlas_token`}}",
+				"artifact": "{{user `atlas_username`}}/debian",
+				"artifact_type": "vagrant.box",
+				"metadata": {
+					"provider": "virtualbox",
+					"created_at": "{{timestamp}}"
+				}
+			}
+		]
 	]
 }
